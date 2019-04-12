@@ -16,7 +16,7 @@
 
 using namespace std;
 
-bool debug = true;
+bool debug = false;
 
 class attribute {
     std::string label;
@@ -153,7 +153,7 @@ vector<vector<int>> populateUsage(vector<attribute> attributes, vector<query> qu
 
     for (int i = 0; i < queries.size(); i++) {
         for (int j = 0; j < attributes.size(); j++) {
-            if (queries[i].query_s.find(attributes[j].name) != std::string::npos) {
+            if (queries[i].query_s.find(attributes[j].name) != std::string::npos) { //TODO add additional check e.g. LOC not part of BLOCK
                 usage[i][j] = 1;
             } else {
                 usage[i][j] = 0;

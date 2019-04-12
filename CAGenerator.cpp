@@ -11,7 +11,7 @@
 
 using namespace std;
 
-bool debug = true;
+bool debug = false;
 
 void remove_carriage_return(std::string& line) {
     if (*line.rbegin() == '\r')     {
@@ -76,7 +76,7 @@ vector<vector<int>> readAffinityMatrix(const std::string &AffinityMatrixFileName
     return affinity;
 }
 
-int bond (int attribute1, int attribute2, int index, const vector<vector<int>> &affinity) {
+int bond (int attribute1, int attribute2, int index, const vector<vector<int>> &affinity, vector<int> &order) {
     if (attribute1 < 0 || attribute2 < 0) {
         return 0;
     }
@@ -87,17 +87,17 @@ int bond (int attribute1, int attribute2, int index, const vector<vector<int>> &
     int sum = 0;
 
     for (int z = 0; z < affinity[0].size(); z++) {
-        sum += affinity[z][attribute1] * affinity[z][attribute2];
+        sum += affinity[z][order[attribute1]] * affinity[z][order[attribute2]];
     }
 
     return sum;
 }
 
-int contribution (int attribute1, int attribute2, int attribute3, const vector<vector<int>> &affinity) {
+int contribution (int attribute1, int attribute2, int attribute3, const vector<vector<int>> &affinity, vector<int> &order) {
     int index = attribute2;
-    return 2*bond(attribute1, attribute2, index, affinity)
-           + 2*bond(attribute2, attribute3, index, affinity)
-           - 2*bond(attribute1, attribute3, index, affinity);
+    return 2*bond(attribute1, attribute2, index, affinity, order)
+           + 2*bond(attribute2, attribute3, index, affinity, order)
+           - 2*bond(attribute1, attribute3, index, affinity, order);
 }
 
 
@@ -121,14 +121,14 @@ vector<vector<int>> calculateClusteredAffinity(vector<vector<int>> affinity) {
         int cont = 0;
 
         for (int i = 0; i < index; i++) {
-            cont = contribution(i-1, index, i, affinity);
+            cont = contribution(i-1, index, i, affinity, order);
             if (cont > max) {
                 max = cont;
                 loc = i;
             }
         }
 
-        cont = contribution(index - 1, index, index + 1, affinity);
+        cont = contribution(index - 1, index, index + 1, affinity, order);
         if (cont > max) {
             loc = index;
         }
@@ -141,11 +141,13 @@ vector<vector<int>> calculateClusteredAffinity(vector<vector<int>> affinity) {
         ca[loc] = affinity[index];
         order[loc] = index;
 
-        cout << "Order: ";
-        for (int i = 0; i < order.size(); i++) {
-            cout << order[i] << ',';
+        if (debug) {
+            cout << "Order: ";
+            for (int i = 0; i < order.size(); i++) {
+                cout << order[i] << ' ';
+            }
+            cout << endl;
         }
-        cout << endl;
 
         index++;
     }
@@ -156,15 +158,22 @@ vector<vector<int>> calculateClusteredAffinity(vector<vector<int>> affinity) {
             cout << order[i] << ' ';
         }
         cout << endl;
+
+        for (int i = 0; i < ca.size(); i++) {
+            for (int j = 0; j < ca[i].size(); j++) {
+                cout << ca[i][j] << ' ';
+            }
+            cout << endl;
+        }
+        cout << endl;
     }
 
     // Shuffle columns
     for (int i = 0; i < no_attributes; i++) {
         for (int j = 0; j < no_attributes; j++) {
-            ca[i][j] = affinity[i][order[j]];
+            ca[i][j] = affinity[order[i]][order[j]];
         }
     }
-
 
     return ca;
 }
@@ -212,5 +221,4 @@ int main (int argc, char *argv[]) {
         }
         cout << endl;
     }
-
 }
