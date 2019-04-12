@@ -175,6 +175,20 @@ vector<vector<int>> calculateClusteredAffinity(vector<vector<int>> affinity) {
         }
     }
 
+    for (int i = 0; i < no_attributes; i++) {
+        cout << "A" << order[i] + 1 << "\t";
+    }
+    cout << endl;
+
+    // Print Clustered Affinity Matrix
+    for (int i = 0; i < ca.size(); i++) {
+        cout << "A" << order[i] + 1 << "\t";
+        for (int j = 0; j < ca[i].size(); j++) {
+            cout << ca[i][j] << ' ';
+        }
+        cout << endl;
+    }
+
     return ca;
 }
 
@@ -213,12 +227,4 @@ int main (int argc, char *argv[]) {
     }
 
     vector<vector<int>> ca = calculateClusteredAffinity(affinity);
-
-    // Print Clustered Affinity Matrix
-    for (int i = 0; i < ca.size(); i++) {
-        for (int j = 0; j < ca[i].size(); j++) {
-            cout << ca[i][j] << ' ';
-        }
-        cout << endl;
-    }
 }
