@@ -12,6 +12,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <cmath>
 
 using namespace std;
 
@@ -168,13 +169,15 @@ vector<vector<int>> populateUsage(vector<attribute> attributes, vector<query> qu
             for (int j = 0; j < usage[i].size(); j++) {
                 cout << usage[i][j] << ' ';
             }
-            cout << endl << endl;
+            cout << endl;
         }
+        cout << endl;
     }
 
     return usage;
 }
 
+bool textBook = false;
 vector<vector<int>> populateAffinityMatrix(vector<vector<int>> usage, vector<vector<int>> access, unsigned long no_attributes, unsigned long no_queries) {
     vector<vector<int>> affinity = vector<vector<int>>(no_attributes, vector<int>(no_attributes, 0));
     int execution = 1;
@@ -183,13 +186,38 @@ vector<vector<int>> populateAffinityMatrix(vector<vector<int>> usage, vector<vec
         for (int j = 0; j < no_attributes; j++) { // for every attribute pair
             affinity[i][j] = 0; // initialise affinity to 0
 
-            for (int k = 0; k < no_queries; k++) { // for each of the queries
-                if (usage[k][i] == 1 && usage[k][j] == 1) { // if both of the attributes are used
+            if (textBook) { // Method described in the text book
+                for (int k = 0; k < no_queries; k++) { // for each of the queries
+                    if (usage[k][i] == 1 && usage[k][j] == 1) { // if both of the attributes are used
 
-                    for (int x = 0; x < access[k].size(); x++) { // sum up the usage across the sites
-                        affinity[i][j] += execution * access[k][x];
+                        for (int x = 0; x < access[k].size(); x++) { // sum up the usage across the sites
+                            affinity[i][j] += execution * access[k][x];
+                        }
                     }
                 }
+            } else {
+                // Affinity i,j = ceil of sum times A_i is accessed by query k across all of the sites
+                //                multiplied by the sum of the number of times A_j is accessed by query
+                //                  k across all of the sites. divided by the square root of the same
+
+                int totalSum[no_queries]; // Calculate the number of times each query is executed on each site
+                for (int z = 0; z < no_queries; z++) { // for each query in the access matrix
+                    totalSum[z] = 0;
+                    for (int y = 0; y < access[z].size(); y++) { // for each site
+                        totalSum[z] += access[z][y]; // sum the times the query is executed on each site
+                    }
+                }
+
+                // A_ik = use (q_k, A_i) * sum (all sites) access_matrix(q_k,S_j)
+                float numerator = 0;
+                float denominator1 = 0;
+                float denominator2 = 0;
+                for (int k = 0; k < no_queries; k++) { // for each of the queries
+                    numerator += (usage[k][i] * totalSum[k]) * (usage[k][j] * totalSum[k]);
+                    denominator1 += usage[k][i] * totalSum[k];
+                    denominator2 += usage[k][j] * totalSum[k];
+                }
+                affinity[i][j] = static_cast<int>(ceil(numerator / sqrt(denominator1 * denominator2)));
             }
         }
     }
