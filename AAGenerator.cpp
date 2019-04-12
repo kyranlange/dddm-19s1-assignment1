@@ -153,7 +153,8 @@ vector<vector<int>> populateUsage(vector<attribute> attributes, vector<query> qu
 
     for (int i = 0; i < queries.size(); i++) {
         for (int j = 0; j < attributes.size(); j++) {
-            if (queries[i].query_s.find(attributes[j].name) != std::string::npos) { //TODO add additional check e.g. LOC not part of BLOCK
+            if (queries[i].query_s.find(attributes[j].name) != std::string::npos &&
+                    !isalnum(queries[i].query_s.at(queries[i].query_s.find(attributes[j].name) - 1))) {
                 usage[i][j] = 1;
             } else {
                 usage[i][j] = 0;
@@ -218,6 +219,9 @@ vector<vector<int>> populateAffinityMatrix(vector<vector<int>> usage, vector<vec
                     denominator2 += usage[k][j] * totalSum[k];
                 }
                 affinity[i][j] = static_cast<int>(ceil(numerator / sqrt(denominator1 * denominator2)));
+                if (affinity[i][j] < 0) {
+                    affinity[i][j] = 0;
+                }
             }
         }
     }
@@ -241,9 +245,9 @@ int main (int argc, char *argv[]) {
 
     if (argc != 4) { // The first argument is the name of the program
         if (debug) {
-            attributes_file = "att_1.txt";
-            queries_file = "query_1.txt";
-            access_frequencies_file = "acc_1.txt";
+            attributes_file = "att_2.txt";
+            queries_file = "query_2.txt";
+            access_frequencies_file = "acc_2.txt";
         } else {
             return -1;
         }
