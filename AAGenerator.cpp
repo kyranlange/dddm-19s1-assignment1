@@ -16,7 +16,7 @@
 
 using namespace std;
 
-bool debug = false;
+bool debug = true;
 
 class attribute {
     std::string label;
