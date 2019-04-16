@@ -72,6 +72,15 @@ std::vector<attribute> readAttributes(const std::string &attribute_file_name) {
         attributes.emplace_back(label, name);
     }
     attributes.erase(attributes.begin());
+
+    if (debug) {
+        cout << "Attributes:" << endl;
+        for (int i = 0; i < attributes.size(); i++) {
+            cout << attributes[i].name << endl;
+        }
+        cout << endl;
+    }
+
     return attributes;
 }
 
@@ -92,6 +101,14 @@ std::vector<query> readQueries(const std::string &queries_file_name) {
         getline(iss, label, ' ');
         getline(iss, query_s);
         queries.emplace_back(label, query_s);
+    }
+
+    if (debug) {
+        cout << "Queries:" << endl;
+        for (int i = 0; i < queries.size(); i++) {
+            cout << queries[i].query_s << endl;
+        }
+        cout << endl;
     }
 
     return queries;
@@ -132,7 +149,7 @@ vector<vector<int>> readAccessFrequency(const std::string &freq_file_name, unsig
             if (query < 0) {
                 sites++;
                 if (next == string::npos) {
-                    access = vector<vector<int>>(no_queries, vector<int>(sites - 1, 0));
+                    access = vector<vector<int>>(no_queries, vector<int>(sites, 0));
                 }
             } else {
                 access[query][site] = stoi(acc_f_line.substr(current, next - current));
@@ -143,6 +160,18 @@ vector<vector<int>> readAccessFrequency(const std::string &freq_file_name, unsig
             }
         }
         while (next != string::npos);
+    }
+
+    if (debug) {
+        cout << "Access:" << endl;
+        for (int i = 0; i < access.size(); i++) {
+            cout << "q" << i+1 << ' ';
+            for (int j = 0; j < access[i].size(); j++) {
+                cout << access[i][j] << ' ';
+            }
+            cout << endl;
+        }
+        cout << endl;
     }
 
     return access;
@@ -156,6 +185,11 @@ vector<vector<int>> populateUsage(vector<attribute> attributes, vector<query> qu
             if (queries[i].query_s.find(attributes[j].name) != std::string::npos &&
                     !isalnum(queries[i].query_s.at(queries[i].query_s.find(attributes[j].name) - 1))) {
                 usage[i][j] = 1;
+
+                if (debug) {
+                    cout << queries[i].query_s << " uses " << attributes[j].name << endl;
+                }
+
             } else {
                 usage[i][j] = 0;
             }
@@ -219,7 +253,7 @@ vector<vector<int>> populateAffinityMatrix(vector<vector<int>> usage, vector<vec
                     denominator2 += usage[k][j] * totalSum[k];
                 }
                 affinity[i][j] = static_cast<int>(ceil(numerator / sqrt(denominator1 * denominator2)));
-                if (affinity[i][j] < 0) {
+                if (affinity[i][j] < 0) { // To fix overflow
                     affinity[i][j] = 0;
                 }
             }
